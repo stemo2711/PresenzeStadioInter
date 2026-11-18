@@ -1,0 +1,13 @@
+cache_wikitext/
+cache_wikitext_supercoppa/
+cache_espn/
+site/
+repo_inter_starter/
+eventi_presenze.csv
+giocatori_inter_visti.csv
+giocatori_avversari_visti.csv
+inter_san_siro_base.csv
+inter_tutte_partite_debug.csv
+inter_serie_a_casa.csv
+partite_senza_formazione.csv
+*_backup*.csv
