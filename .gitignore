@@ -11,3 +11,6 @@ inter_tutte_partite_debug.csv
 inter_serie_a_casa.csv
 partite_senza_formazione.csv
 *_backup*.csv
+token*.txt
+estrazione_partite.ipynb
+formazioni_espn.ipynb
