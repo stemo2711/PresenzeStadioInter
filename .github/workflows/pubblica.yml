@@ -1,6 +1,6 @@
 name: Pubblica statistiche
 
-# Parte quando aggiorni i dati o i notebook (push su main) e a mano dal tab Actions
+# Parte quando aggiorni i dati, i notebook o la grafica (push su main) e a mano dal tab Actions
 on:
   push:
     branches: [main]
@@ -11,6 +11,7 @@ on:
       - "formazioni_supercoppa_wikipedia.csv"
       - "*.ipynb"
       - "build_site.py"
+      - "home_template.html"
       - "requirements.txt"
       - ".github/workflows/pubblica.yml"
   workflow_dispatch:

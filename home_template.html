@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04060d">
+<title>San Siro · le mie partite dell'Inter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blu:#1637a8; --nero:#04060d; --oro:#e8b873; --testo:#f3f5fa; --muto:#a9b3cf;
+  --pannello:rgba(6,10,26,.86); --bordo:rgba(232,184,115,.28); --linea:rgba(255,255,255,.09);
+  --v:#2fb36b; --n:#8b93a7; --p:#e04b55;
+  --titoli:'Bebas Neue',Anton,Impact,'Arial Narrow',sans-serif;
+  --testi:'Barlow Semi Condensed','Arial Narrow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:#04060d}
+body{margin:0;color:var(--testo);font:17px/1.35 var(--testi);min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.6)),
+             repeating-linear-gradient(90deg,var(--blu) 0 44px,var(--nero) 44px 88px)}
+a{color:inherit;text-decoration:none}
+button,select,input{font:inherit;color:inherit}
+h1,h2,h3,.tit{font-family:var(--titoli);font-weight:400;letter-spacing:.04em;margin:0}
+
+/* testata */
+.hero{padding:calc(env(safe-area-inset-top,0px) + 20px) 16px 8px;text-align:center}
+.stelle{color:var(--oro);letter-spacing:.35em;font-size:16px}
+.hero h1{font-size:clamp(54px,18vw,96px);line-height:.92;text-shadow:0 3px 0 #000,0 0 24px rgba(0,0,0,.5)}
+.hero h1 em{font-style:normal;color:var(--oro)}
+.sotto{color:#dfe6fb;font-size:16px;margin:4px 0 0;text-shadow:0 1px 3px #000}
+.kpi{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px auto 0;max-width:620px}
+.kpi div{background:var(--pannello);border:1px solid var(--bordo);border-radius:12px;padding:5px 12px 4px;min-width:74px}
+.kpi b{display:block;font:30px/1 var(--titoli);letter-spacing:.03em;color:var(--oro)}
+.kpi span{font-size:12.5px;color:var(--muto);text-transform:uppercase;letter-spacing:.06em}
+
+body.compatto .hero{padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:0}
+body.compatto .hero h1{font-size:38px}
+body.compatto .stelle,body.compatto .sotto,body.compatto .kpi{display:none}
+
+/* ricerca */
+.barra{position:sticky;top:0;z-index:20;padding:10px 12px 10px;
+  background:linear-gradient(180deg,rgba(4,6,13,.97) 75%,rgba(4,6,13,0))}
+.extra{max-width:760px;margin:0 auto;padding:0 12px}
+.barra .in{max-width:760px;margin:auto}
+.cerca{position:relative}
+.cerca input{width:100%;font-size:18px;padding:13px 44px 13px 16px;border-radius:14px;border:2px solid var(--bordo);
+  background:#070b1c;outline:none}
+.cerca input:focus{border-color:var(--oro);box-shadow:0 0 0 3px rgba(232,184,115,.22)}
+.cerca input::placeholder{color:#7f8aab}
+.cerca input::-webkit-search-cancel-button,.cerca input::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
+.cerca button{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:10px;
+  background:transparent;color:var(--muto);font-size:22px;display:none;cursor:pointer}
+.cerca.pieno button{display:block}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--bordo);background:rgba(6,10,26,.8);border-radius:999px;padding:5px 13px;font-size:15px;cursor:pointer}
+.chip:hover,.chip:focus{border-color:var(--oro);outline:none}
+.filtri{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding-top:8px}
+@media(min-width:620px){.filtri{grid-template-columns:repeat(4,1fr)}}
+.filtri select{width:100%;padding:9px 10px;font-size:16px;border-radius:10px;border:1px solid var(--linea);background:#070b1c}
+.filtri select.attivo{border-color:var(--oro);color:var(--oro)}
+body[data-vista="dettaglio"] .extra{display:none}
+
+/* contenuto */
+main{max-width:760px;margin:0 auto;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 30px)}
+.card{background:var(--pannello);border:1px solid var(--linea);border-radius:16px;padding:14px;margin:12px 0;
+  backdrop-filter:blur(3px)}
+.card h2,.sez{font-size:26px;color:var(--oro);margin:0 0 8px}
+.sez{margin:20px 4px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.sez small{font:15px var(--testi);letter-spacing:0;color:var(--muto)}
+.muto{color:var(--muto)}
+.vuoto{text-align:center;padding:30px 10px;color:var(--muto)}
+
+.riga{display:grid;grid-template-columns:54px 1fr 38px;gap:10px;align-items:center;
+  background:var(--pannello);border:1px solid var(--linea);border-radius:14px;padding:10px 12px;margin:8px 0}
+.riga:hover,.riga:focus-visible{border-color:var(--oro);outline:none}
+.data{text-align:center;line-height:1}
+.data b{display:block;font:32px/1 var(--titoli);color:#fff}
+.data span{font-size:12.5px;color:var(--muto);text-transform:uppercase;letter-spacing:.04em}
+.comp{font-size:13px;color:var(--oro);text-transform:uppercase;letter-spacing:.07em}
+.titolo{font-size:20px;font-weight:600;line-height:1.15}
+.titolo .num{font:26px/1 var(--titoli);letter-spacing:.04em;padding:0 5px}
+.perche{font-size:15px;color:#cfd8f2;margin-top:3px}
+.esito{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:21px var(--titoli);color:#fff;background:var(--n)}
+.e-V{background:var(--v)}.e-P{background:var(--p)}.e-N{background:var(--n)}
+.giocatore-riga{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--pannello);
+  border:1px solid var(--linea);border-radius:14px;padding:10px 14px;margin:8px 0}
+.giocatore-riga b{font-size:19px}
+.giocatore-riga .dx{color:var(--muto);font-size:15px;text-align:right}
+.giocatore-riga:hover{border-color:var(--oro)}
+.altri{display:block;width:100%;margin:10px 0;padding:11px;border-radius:12px;border:1px dashed var(--bordo);
+  background:transparent;cursor:pointer;color:var(--oro)}
+
+.classifica{list-style:none;margin:0;padding:0;counter-reset:n}
+.classifica li{counter-increment:n;display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--linea)}
+.classifica li:last-child{border:0}
+.classifica li::before{content:counter(n);font:22px var(--titoli);color:var(--oro);width:22px;text-align:center}
+.classifica a,.classifica span.nome{flex:1;font-size:18px}
+.classifica .v{font:24px var(--titoli);letter-spacing:.04em}
+.griglia2{display:grid;gap:12px}
+@media(min-width:700px){.griglia2{grid-template-columns:1fr 1fr}}
+.link-report{display:block;padding:12px 14px;margin:8px 0;border-radius:14px;border:1px solid var(--bordo);background:var(--pannello)}
+.link-report b{font:22px var(--titoli);letter-spacing:.04em;color:var(--oro);display:block}
+.link-report span{color:var(--muto);font-size:15px}
+
+/* pagina partita / giocatore */
+.nav{display:flex;justify-content:space-between;gap:8px;margin:8px 0}
+.nav a,.nav button{background:var(--pannello);border:1px solid var(--linea);border-radius:10px;padding:8px 14px;cursor:pointer}
+.nav a.off{opacity:.3;pointer-events:none}
+.scheda .com{color:var(--oro);text-transform:uppercase;letter-spacing:.08em;font-size:14px}
+.scheda .risultato{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0;text-align:center}
+.scheda .sq{flex:1;font:clamp(24px,7.5vw,38px)/1 var(--titoli);letter-spacing:.04em}
+.scheda .pt{font:clamp(44px,14vw,70px)/1 var(--titoli);color:var(--oro);white-space:nowrap}
+.pillole{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.pillola{border:1px solid var(--linea);border-radius:999px;padding:4px 11px;font-size:15px;background:rgba(255,255,255,.04)}
+.pillola.oro{border-color:var(--oro);color:var(--oro)}
+.cronaca{list-style:none;margin:0;padding:0}
+.cronaca li{display:grid;grid-template-columns:50px 24px 1fr;gap:6px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--linea)}
+.cronaca li:last-child{border:0}
+.cronaca .mn{font:20px var(--titoli);color:var(--oro);text-align:right}
+.cronaca .lato{font-size:13px;color:var(--muto)}
+.formazioni{display:grid;gap:12px}
+@media(min-width:700px){.formazioni{grid-template-columns:1fr 1fr}}
+.col h3{font-size:26px;color:var(--oro)}
+.col h4{margin:12px 0 4px;font:15px var(--testi);color:var(--muto);text-transform:uppercase;letter-spacing:.08em}
+.col ul{list-style:none;margin:0;padding:0}
+.col li{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--linea)}
+.col li .mag{flex:none;width:26px;text-align:right;font:20px var(--titoli);color:var(--muto)}
+.col li a,.col li span.nm{flex:1}
+.col li.inutil{opacity:.55}
+.bs{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.b{font-size:14px;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.08);white-space:nowrap}
+.b.s{color:#7ee0a5}.b.so{color:#ff8f96}
+.kpi-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.kpi-g div{text-align:center;background:rgba(255,255,255,.05);border-radius:12px;padding:8px 4px}
+.kpi-g b{display:block;font:32px/1 var(--titoli);color:var(--oro)}
+.kpi-g span{font-size:13px;color:var(--muto);text-transform:uppercase;letter-spacing:.05em}
+footer{text-align:center;color:var(--muto);font-size:13px;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 24px)}
+</style>
+</head>
+<body data-vista="home">
+
+<header class="hero">
+  <div class="stelle">★ ★</div>
+  <h1>SAN <em>SIRO</em></h1>
+  <p class="sotto">Le mie partite dell'Inter, dal vivo</p>
+  <div class="kpi" id="kpi"></div>
+</header>
+
+<div class="barra"><div class="in">
+  <div class="cerca" id="cerca">
+    <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+           placeholder="Cerca partita o giocatore…" aria-label="Cerca">
+    <button id="svuota" type="button" aria-label="Cancella la ricerca">×</button>
+  </div>
+</div></div>
+<div class="extra">
+  <div class="chips" id="chips"></div>
+  <div class="filtri" id="filtri">
+    <select id="f-stagione" aria-label="Stagione"></select>
+    <select id="f-comp" aria-label="Competizione"></select>
+    <select id="f-esito" aria-label="Esito"></select>
+    <select id="f-settore" aria-label="Settore"></select>
+  </div>
+</div>
+
+<main id="app"></main>
+<footer id="piede"></footer>
+
+<script id="dati" type="application/json">__DATI_JSON__</script>
+<script>
+(function () {
+'use strict';
+const D = JSON.parse(document.getElementById('dati').textContent);
+const P = D.partite;
+const $ = id => document.getElementById(id);
+const app = $('app');
+
+/* ---------- utilita' ---------- */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const ESITO_PAROLE = {V:'vittoria vinta', N:'pareggio pareggiata', P:'sconfitta persa'};
+const ESITO_NOME = {V:'Vittoria', N:'Pareggio', P:'Sconfitta'};
+const dataBreve = iso => { const [y,m,d] = iso.split('-'); return d + '/' + m + '/' + y; };
+const dataLunga = iso => { const [y,m,d] = iso.split('-'); return (+d) + ' ' + MESI[+m-1] + ' ' + y; };
+const minKey = s => { if (!s) return 999; const a = String(s).split('+'); return +a[0] + (a[1] ? +a[1]/100 : 0); };
+const cmpEv = (a, b) => minKey(a.m) - minKey(b.m);
+const num = n => (n == null ? '' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+
+/* ---------- indicizzazione ---------- */
+const PL = new Map();   // giocatori: chiave -> statistiche
+function giocatore(k, n) {
+  if (!PL.has(k)) PL.set(k, {k, n, _n: norm(n), pv:0, ti:0, su:0, pan:0, I:0, A:0, gol:0, rig:0, aut:0, amm:0, esp:0, app:[]});
+  return PL.get(k);
+}
+const visti = new Set();   // (partita|giocatore) con presenza in formazione
+
+/* passata 1: formazioni (servono tutte prima di contare gli eventi) */
+for (const m of P) {
+  m.derby = /milan/i.test(m.av);
+  m._nomi = [];
+  for (const sq of ['I','A']) {
+    const f = m.fo && m.fo[sq];
+    if (!f) continue;
+    for (const g of f.g) {
+      m._nomi.push(g.n);
+      const p = giocatore(g.k, g.n);
+      p.pv += g.g; p.ti += g.t; p.su += (g.g && !g.t) ? 1 : 0; p.pan += g.g ? 0 : 1; p[sq] += g.g;
+      p.app.push({m, sq, g});
+      visti.add(m.id + '|' + g.k);
+    }
+  }
+}
+
+/* passata 2: gol e cartellini */
+for (const m of P) {
+  for (const e of m.ev) {
+    m._nomi.push(e.n);
+    const p = e.k && PL.get(e.k);
+    if (!p) continue;
+    if (!visti.has(m.id + '|' + e.k)) {   // partita senza formazione: chi segna o prende un cartellino era in campo
+      visti.add(m.id + '|' + e.k);
+      const lato = e.x === 'aut.' ? (e.q === 'I' ? 'A' : 'I') : e.q;
+      p.pv += 1; p[lato] += 1;
+      p.app.push({m, sq: lato, g: {t:0, g:1, si:'', so:'', nf:1}});
+    }
+    if (e.t === 'g') { if (e.x === 'aut.') p.aut++; else { p.gol++; if (e.x === 'rig.') p.rig++; } }
+    else if (e.t === 'a') p.amm++; else p.esp++;
+  }
+  m._t = norm([m.av, m.casa, m.tr, m.c, m.s, m.t, m.d, dataBreve(m.d), dataLunga(m.d), m.o, m.p,
+    (m.p || '').replace(/[–—]/g, '-'), ESITO_PAROLE[m.e] || '', m.arb, m.stad, m.se,
+    m.derby ? 'derby stracittadina milan' : '', m.ic ? 'in casa' : 'in trasferta', m._nomi.join(' ')].join(' | '));
+}
+const GIOC = [...PL.values()];
+
+/* ---------- stato ---------- */
+const S = {q:'', stagione:'', comp:'', esito:'', settore:'', n:40, np:6};
+const tokens = () => norm(S.q).split(/\s+/).filter(Boolean);
+const filtriAttivi = () => !!(S.stagione || S.comp || S.esito || S.settore);
+
+/* ---------- testata e filtri ---------- */
+(function init() {
+  const tot = P.length, v = P.filter(m=>m.e==='V').length, n = P.filter(m=>m.e==='N').length, p = P.filter(m=>m.e==='P').length;
+  const gf = P.reduce((a,m)=>a+(m.gi||0),0), gs = P.reduce((a,m)=>a+(m.ga||0),0);
+  const stag = new Set(P.map(m=>m.s)).size;
+  $('kpi').innerHTML = [[tot,'partite'],[v+'-'+n+'-'+p,'V · N · P'],[gf+'-'+gs,'gol F-S'],[stag,'stagioni'],
+    [GIOC.filter(g=>g.pv>0).length,'giocatori visti']].map(x=>'<div><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></div>').join('');
+  const opz = (id, titolo, valori) => { $(id).innerHTML = '<option value="">'+titolo+'</option>' +
+    valori.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join(''); };
+  const uniq = f => [...new Set(P.map(f).filter(Boolean))];
+  opz('f-stagione', 'Stagione', uniq(m=>m.s).sort().reverse());
+  opz('f-comp', 'Competizione', uniq(m=>m.c).sort());
+  opz('f-settore', 'Settore', uniq(m=>m.se).sort());
+  $('f-esito').innerHTML = '<option value="">Esito</option><option value="V">Vittorie</option><option value="N">Pareggi</option><option value="P">Sconfitte</option>';
+  const suggerimenti = ['derby','vittorie','sconfitte','champions','supercoppa','terzo anello','secondo anello'];
+  const cc = uniq(m=>m.s).length > 0 ? suggerimenti : [];
+  $('chips').innerHTML = cc.map(t=>'<button class="chip" type="button" data-q="'+esc(t)+'">'+esc(t)+'</button>').join('');
+  $('piede').innerHTML = 'Aggiornato il ' + esc(D.agg || '');
+})();
+
+function setDettaglio() { document.body.dataset.vista = 'dettaglio'; document.body.classList.add('compatto'); }
+
+/* ---------- componenti ---------- */
+function badge(e) {
+  const mn = e.m ? ' ' + esc(e.m) + "'" : '';
+  if (e.t === 'g') return '<span class="b">⚽' + (e.x === 'aut.' ? ' aut.' : e.x === 'rig.' ? ' rig.' : '') + mn + '</span>';
+  if (e.t === 'a') return '<span class="b">🟨' + mn + '</span>';
+  return '<span class="b">🟥' + mn + (e.x ? ' (' + esc(e.x) + ')' : '') + '</span>';
+}
+const badgeEventi = (m, k) => k ? m.ev.filter(e => e.k === k).sort(cmpEv).map(badge).join('') : '';
+function badgeSost(g) {
+  let h = '';
+  if (g.si) h += '<span class="b s">▲' + (g.si !== '1' ? ' ' + esc(g.si) + "'" : '') + '</span>';
+  if (g.so) h += '<span class="b so">▼' + (g.so !== '1' ? ' ' + esc(g.so) + "'" : '') + '</span>';
+  return h;
+}
+function rigaPartita(m, extra) {
+  const [y, mo, d] = m.d.split('-');
+  return '<a class="riga" href="#/partita/' + m.id + '"><div class="data"><b>' + (+d) + '</b><span>' +
+    MESI[+mo-1].slice(0,3) + ' ' + y.slice(2) + '</span></div><div><div class="comp">' + esc(m.c) +
+    (m.t ? ' · ' + esc(m.t) : '') + '</div><div class="titolo">' + esc(m.casa) + ' <span class="num">' + esc(m.p) +
+    '</span> ' + esc(m.tr) + '</div>' + (extra || '') + '</div><div class="esito e-' + (m.e || 'x') + '">' + (m.e || '·') + '</div></a>';
+}
+function rigaGiocatore(p) {
+  const pl = n => n + (n === 1 ? ' partita' : ' partite');
+  const lato = (p.I ? 'Inter ' + pl(p.I) : '') + (p.I && p.A ? ' · ' : '') + (p.A ? 'contro l\'Inter ' + pl(p.A) : '');
+  return '<a class="giocatore-riga" href="#/giocatore/' + encodeURIComponent(p.k) + '"><div><b>' + esc(p.n) +
+    '</b><div class="muto">' + esc(lato) + '</div></div><div class="dx">' +
+    (p.gol ? p.gol + ' gol visti<br>' : '') + (p.ti ? p.ti + ' da titolare' : '') + '</div></a>';
+}
+function perche(m, toks) {
+  if (!toks.length) return '';
+  const lunghi = toks.filter(t => t.length >= 3);
+  const parti = [];
+  const hit = n => lunghi.some(t => norm(n).includes(t));
+  const visti = new Set();
+  for (const sq of ['I','A']) {
+    const f = m.fo && m.fo[sq];
+    if (!f) continue;
+    for (const g of f.g) if (hit(g.n)) {
+      visti.add(g.k);
+      parti.push('<b>' + esc(g.n) + '</b> ' + (g.t ? 'titolare' : g.g ? 'subentrato' : 'in panchina') + ' ' + badgeEventi(m, g.k));
+    }
+  }
+  for (const e of m.ev) if (hit(e.n) && !(e.k && visti.has(e.k))) parti.push('<b>' + esc(e.n) + '</b> ' + badge(e));
+  if (lunghi.some(t => norm(m.arb).includes(t))) parti.push('arbitro ' + esc(m.arb));
+  if (lunghi.some(t => norm(m.se).includes(t))) parti.push('settore ' + esc(m.se));
+  return parti.length ? '<div class="perche">' + parti.slice(0, 3).join(' · ') + (parti.length > 3 ? ' …' : '') + '</div>' : '';
+}
+function classifica(titolo, voci, unita) {
+  if (!voci.length) return '';
+  return '<section class="card"><h2>' + esc(titolo) + '</h2><ol class="classifica">' + voci.map(v =>
+    '<li>' + (v.k ? '<a href="#/giocatore/' + encodeURIComponent(v.k) + '">' + esc(v.n) + '</a>' : '<span class="nome">' + esc(v.n) + '</span>') +
+    '<span class="v">' + v.v + '</span></li>').join('') + '</ol></section>';
+}
+
+/* ---------- home / ricerca ---------- */
+function partiteFiltrate() {
+  const toks = tokens();
+  return P.filter(m =>
+    (!S.stagione || m.s === S.stagione) && (!S.comp || m.c === S.comp) &&
+    (!S.esito || m.e === S.esito) && (!S.settore || m.se === S.settore) &&
+    toks.every(t => m._t.includes(t))).slice().reverse();
+}
+function home() {
+  document.body.dataset.vista = 'home';
+  const toks = tokens();
+  document.body.classList.toggle('compatto', !!(toks.length || filtriAttivi()));
+  let h = '';
+  if (!toks.length && !filtriAttivi()) {
+    const inter = GIOC.filter(g => g.I > 0).sort((a,b) => b.I - a.I || b.ti - a.ti).slice(0, 8).map(g => ({k:g.k, n:g.n, v:g.I}));
+    const marc = new Map();
+    for (const m of P) for (const e of m.ev) if (e.t === 'g' && e.q === 'I' && e.x !== 'aut.') {
+      const id = e.k || 'n:' + norm(e.n);
+      const nome = e.k && PL.get(e.k) ? PL.get(e.k).n : e.n;
+      if (!marc.has(id)) marc.set(id, {k:e.k, n:nome, v:0});
+      marc.get(id).v++;
+    }
+    const top = [...marc.values()].sort((a,b) => b.v - a.v).slice(0, 8);
+    h += '<div class="griglia2">' + classifica('Giocatori più visti', inter) + classifica('Marcatori più visti', top) + '</div>';
+  } else {
+    const gtrov = toks.length ? GIOC.filter(g => toks.every(t => g._n.includes(t))).sort((a,b) => b.pv - a.pv || b.gol - a.gol) : [];
+    if (gtrov.length) {
+      h += '<div class="sez"><h2>Giocatori</h2><small>' + gtrov.length + '</small></div>' +
+        gtrov.slice(0, S.np).map(rigaGiocatore).join('');
+      if (gtrov.length > S.np) h += '<button class="altri" data-act="piu-giocatori">Mostra altri giocatori (' + (gtrov.length - S.np) + ')</button>';
+    }
+  }
+  const lista = partiteFiltrate();
+  h += '<div class="sez"><h2>' + (toks.length || filtriAttivi() ? 'Partite' : 'Tutte le partite') + '</h2><small>' + lista.length +
+    (lista.length === 1 ? ' partita' : ' partite') + '</small></div>';
+  if (!lista.length) h += '<div class="vuoto">Nessun risultato. Prova con meno parole o togli un filtro.</div>';
+  h += lista.slice(0, S.n).map(m => rigaPartita(m, perche(m, toks))).join('');
+  if (lista.length > S.n) h += '<button class="altri" data-act="piu-partite">Mostra altre partite (' + (lista.length - S.n) + ')</button>';
+  if (!toks.length && !filtriAttivi() && D.pagine && D.pagine.length) {
+    h += '<div class="sez"><h2>Statistiche complete</h2></div>' + D.pagine.map(p =>
+      '<a class="link-report" href="' + esc(p.href) + '"><b>' + esc(p.titolo) + '</b><span>' + esc(p.descr) + '</span></a>').join('');
+  }
+  app.innerHTML = h;
+}
+
+/* ---------- pagina partita ---------- */
+function colonna(m, sq) {
+  const f = m.fo && m.fo[sq];
+  const nome = sq === 'I' ? 'Inter' : m.av;
+  if (!f) return '<section class="card col"><h3>' + esc(nome) + '</h3><p class="muto">Formazione non disponibile.</p></section>';
+  const riga = g => '<li class="' + (g.g ? '' : 'inutil') + '"><span class="mag">' + esc(g.u) + '</span>' +
+    (g.k ? '<a href="#/giocatore/' + encodeURIComponent(g.k) + '">' + esc(g.n) + '</a>' : '<span class="nm">' + esc(g.n) + '</span>') +
+    '<span class="bs">' + badgeSost(g) + badgeEventi(m, g.k) + '</span></li>';
+  const tit = f.g.filter(g => g.t), pan = f.g.filter(g => !g.t);
+  return '<section class="card col"><h3>' + esc(nome) + '</h3>' + (f.mod ? '<div class="muto">modulo ' + esc(f.mod) + '</div>' : '') +
+    '<h4>In campo dall\'inizio</h4><ul>' + tit.map(riga).join('') + '</ul>' +
+    (pan.length ? '<h4>Panchina</h4><ul>' + pan.map(riga).join('') + '</ul>' : '') + '</section>';
+}
+function partita(id) {
+  setDettaglio();
+  const m = P[id];
+  if (!m) return nonTrovato();
+  const prev = P[id - 1], next = P[id + 1];
+  let h = '<div class="nav"><button type="button" data-act="indietro">← Indietro</button><span style="display:flex;gap:6px">' +
+    '<a class="' + (prev ? '' : 'off') + '" href="#/partita/' + (id - 1) + '">‹ Prec.</a>' +
+    '<a class="' + (next ? '' : 'off') + '" href="#/partita/' + (id + 1) + '">Succ. ›</a></span></div>';
+  h += '<section class="card scheda"><div class="com">' + esc(m.c) + (m.t ? ' · ' + esc(m.t) : '') + ' · ' + esc(m.s) + '</div>' +
+    '<div class="risultato"><div class="sq">' + esc(m.casa) + '</div><div class="pt">' + esc(m.p || '–') + '</div><div class="sq">' + esc(m.tr) + '</div></div>' +
+    '<div class="pillole">' + [
+      '<span class="pillola">' + dataLunga(m.d) + (m.o ? ' · ' + esc(m.o) : '') + '</span>',
+      m.e ? '<span class="pillola">' + ESITO_NOME[m.e] + '</span>' : '',
+      m.stad ? '<span class="pillola">' + esc(m.stad) + '</span>' : '',
+      m.arb ? '<span class="pillola">Arbitro: ' + esc(m.arb) + '</span>' : '',
+      m.pr ? '<span class="pillola">' + num(m.pr) + ' spettatori</span>' : '',
+      m.se ? '<span class="pillola oro">Il mio posto: ' + esc(m.se) + '</span>' : '',
+      m.rep ? '<a class="pillola" href="' + esc(m.rep) + '" target="_blank" rel="noopener">Report ↗</a>' : ''
+    ].join('') + '</div></section>';
+  const cron = m.ev.slice().sort(cmpEv);
+  if (cron.length) {
+    h += '<section class="card"><h2>Cronaca</h2><ul class="cronaca">' + cron.map(e => {
+      const icona = e.t === 'g' ? '⚽' : e.t === 'a' ? '🟨' : '🟥';
+      const chi = e.k && PL.get(e.k) ? '<a href="#/giocatore/' + encodeURIComponent(e.k) + '">' + esc(e.n) + '</a>' : esc(e.n);
+      const nota = e.x === 'rig.' ? ' (rigore)' : e.x === 'aut.' ? ' (autogol)' : e.x ? ' (' + esc(e.x) + ')' : '';
+      const lato = e.q === 'I' ? 'Inter' : esc(m.av);
+      return '<li><span class="mn">' + (e.m ? esc(e.m) + "'" : '') + '</span><span>' + icona + '</span><span>' + chi + nota +
+        ' <span class="lato">· ' + (e.x === 'aut.' ? 'a favore di ' : '') + lato + '</span></span></li>';
+    }).join('') + '</ul></section>';
+  }
+  h += '<div class="formazioni">' + (m.ic ? colonna(m, 'I') + colonna(m, 'A') : colonna(m, 'A') + colonna(m, 'I')) + '</div>';
+  app.innerHTML = h;
+}
+
+/* ---------- pagina giocatore ---------- */
+function paginaGiocatore(k) {
+  setDettaglio();
+  const p = PL.get(k);
+  if (!p) return nonTrovato();
+  const app_ = p.app.slice().sort((a, b) => b.m.d.localeCompare(a.m.d));
+  let h = '<div class="nav"><button type="button" data-act="indietro">← Indietro</button></div>';
+  h += '<section class="card scheda"><div class="com">' + (p.I ? 'Inter' : '') + (p.I && p.A ? ' · ' : '') + (p.A ? 'Avversario' : '') + '</div>' +
+    '<h2 style="font-size:44px;color:#fff;line-height:1">' + esc(p.n) + '</h2>' +
+    '<div class="kpi-g">' + [[p.pv,'partite viste'],[p.ti,'da titolare'],[p.su,'subentrato'],[p.gol,'gol visti'],[p.amm,'ammonizioni'],[p.esp,'espulsioni']]
+      .map(x => '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>').join('') + '</div>' +
+    (p.rig || p.aut || p.pan ? '<div class="pillole">' + (p.rig ? '<span class="pillola">di cui ' + p.rig + ' su rigore</span>' : '') +
+      (p.aut ? '<span class="pillola">' + p.aut + ' autogol</span>' : '') + (p.pan ? '<span class="pillola">' + p.pan + ' volte in panchina senza entrare</span>' : '') + '</div>' : '') +
+    '</section>';
+  h += '<div class="sez"><h2>Partite</h2><small>' + app_.length + '</small></div>';
+  h += app_.map(a => {
+    const ruolo = a.g.nf ? 'formazione non disponibile' : a.g.t ? 'titolare' : a.g.g ? 'subentrato' : 'in panchina';
+    const con = a.sq === 'I' ? 'con l\'Inter' : 'contro l\'Inter';
+    return rigaPartita(a.m, '<div class="perche">' + ruolo + ' · ' + con + ' ' + badgeSost(a.g) + badgeEventi(a.m, p.k) + '</div>');
+  }).join('');
+  app.innerHTML = h;
+}
+function nonTrovato() {
+  setDettaglio();
+  app.innerHTML = '<div class="nav"><a href="#/">← Home</a></div><div class="vuoto">Pagina non trovata.</div>';
+}
+
+/* ---------- routing ---------- */
+function route() {
+  const parti = location.hash.replace(/^#\/?/, '').split('/');
+  const tipo = parti[0], arg = decodeURIComponent(parti.slice(1).join('/'));
+  if (tipo === 'partita') partita(+arg);
+  else if (tipo === 'giocatore') paginaGiocatore(arg);
+  else {
+    if (tipo === 'cerca') { S.q = arg; $('q').value = arg; aggiornaX(); }
+    home();
+  }
+  window.scrollTo(0, 0);
+}
+const aggiornaX = () => $('cerca').classList.toggle('pieno', !!$('q').value);
+const inHome = () => document.body.dataset.vista === 'home';
+function nuovaRicerca() {
+  S.q = $('q').value; S.n = 40; S.np = 6; aggiornaX();
+  const h = S.q ? '#/cerca/' + encodeURIComponent(S.q) : '#/';
+  if (inHome()) { history.replaceState(null, '', h); home(); } else { location.hash = h; }
+}
+
+/* ---------- eventi ---------- */
+$('q').addEventListener('input', nuovaRicerca);
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') $('q').blur(); });
+$('svuota').addEventListener('click', () => { $('q').value = ''; nuovaRicerca(); $('q').focus(); });
+$('chips').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (b) { $('q').value = b.dataset.q; nuovaRicerca(); } });
+[['f-stagione','stagione'],['f-comp','comp'],['f-esito','esito'],['f-settore','settore']].forEach(([id, chiave]) => {
+  $(id).addEventListener('change', () => {
+    S[chiave] = $(id).value; S.n = 40; $(id).classList.toggle('attivo', !!$(id).value);
+    if (inHome()) home(); else location.hash = '#/';
+  });
+});
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const a = b.dataset.act;
+  if (a === 'piu-partite') { S.n += 40; home(); }
+  else if (a === 'piu-giocatori') { S.np += 20; home(); }
+  else if (a === 'indietro') { if (history.length > 1) history.back(); else location.hash = '#/'; }
+});
+window.addEventListener('hashchange', route);
+route();
+})();
+</script>
+</body>
+</html>
