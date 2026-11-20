@@ -101,6 +101,17 @@ main{max-width:760px;margin:0 auto;padding:6px 12px calc(env(safe-area-inset-bot
 .classifica li::before{content:counter(n);font:22px var(--titoli);color:var(--oro);width:22px;text-align:center}
 .classifica a,.classifica span.nome{flex:1;font-size:18px}
 .classifica .v{font:24px var(--titoli);letter-spacing:.04em}
+.vedi{display:block;margin-top:8px;padding:9px;text-align:center;border-radius:10px;border:1px dashed var(--bordo);color:var(--oro);font-size:16px}
+.vedi:hover{border-style:solid}
+.avv-link{margin:12px 4px 0;text-align:center;font-size:15px;color:var(--muto)}
+.avv-link a{color:#cdd6f2;border-bottom:1px solid var(--linea);padding:2px;margin:0 3px}
+.avv-link a:hover{border-color:var(--oro)}
+.classifica.lista-completa li::before{content:attr(data-r)}
+.lista-completa .nm{flex:1;min-width:0}
+.lista-completa .nm small{display:block;color:var(--muto);font-size:14px;line-height:1.2}
+.tab-class{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+.tab-class .chip.on{border-color:var(--oro);color:var(--oro)}
+.tab-class .gruppo{width:100%;font-size:12.5px;color:var(--muto);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
 .griglia2{display:grid;gap:12px}
 @media(min-width:700px){.griglia2{grid-template-columns:1fr 1fr}}
 .link-report{display:block;padding:12px 14px;margin:8px 0;border-radius:14px;border:1px solid var(--bordo);background:var(--pannello)}
@@ -195,7 +206,7 @@ const num = n => (n == null ? '' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.
 /* ---------- indicizzazione ---------- */
 const PL = new Map();   // giocatori: chiave -> statistiche
 function giocatore(k, n) {
-  if (!PL.has(k)) PL.set(k, {k, n, _n: norm(n), pv:0, ti:0, su:0, pan:0, I:0, A:0, gol:0, rig:0, aut:0, amm:0, esp:0, app:[]});
+  if (!PL.has(k)) PL.set(k, {k, n, _n: norm(n), pv:0, ti:0, su:0, pan:0, I:0, A:0, tiI:0, tiA:0, suI:0, suA:0, gol:0, rig:0, aut:0, amm:0, esp:0, app:[]});
   return PL.get(k);
 }
 const visti = new Set();   // (partita|giocatore) con presenza in formazione
@@ -211,6 +222,7 @@ for (const m of P) {
       m._nomi.push(g.n);
       const p = giocatore(g.k, g.n);
       p.pv += g.g; p.ti += g.t; p.su += (g.g && !g.t) ? 1 : 0; p.pan += g.g ? 0 : 1; p[sq] += g.g;
+      p['ti' + sq] += g.t; p['su' + sq] += (g.g && !g.t) ? 1 : 0;
       p.app.push({m, sq, g});
       visti.add(m.id + '|' + g.k);
     }
@@ -238,8 +250,33 @@ for (const m of P) {
 }
 const GIOC = [...PL.values()];
 
+/* classifiche */
+function aggregaGol(q) {
+  const mp = new Map();
+  for (const m of P) for (const e of m.ev) if (e.t === 'g' && e.q === q && e.x !== 'aut.') {
+    const id = e.k || 'n:' + norm(e.n);
+    const p = e.k ? PL.get(e.k) : null;
+    if (!mp.has(id)) mp.set(id, {k: e.k || null, n: p ? p.n : e.n, v: 0, rig: 0, p});
+    const o = mp.get(id); o.v++; if (e.x === 'rig.') o.rig++;
+  }
+  return [...mp.values()].sort((a, b) => b.v - a.v || a.n.localeCompare(b.n));
+}
+const LISTE = {
+  giocatori: GIOC.filter(g => g.I > 0).sort((a, b) => b.I - a.I || b.tiI - a.tiI || a.n.localeCompare(b.n)).map(g => ({k: g.k, n: g.n, v: g.I, p: g})),
+  marcatori: aggregaGol('I'),
+  avversari: GIOC.filter(g => g.A > 0).sort((a, b) => b.A - a.A || b.tiA - a.tiA || a.n.localeCompare(b.n)).map(g => ({k: g.k, n: g.n, v: g.A, p: g})),
+  'gol-contro': aggregaGol('A')
+};
+const CLASS_DEF = {
+  giocatori: {s: 'Inter · giocatori', t: 'Giocatori più visti', d: "Numero di partite in cui hanno giocato con l'Inter, da titolari o subentrati."},
+  marcatori: {s: 'Inter · marcatori', t: 'Marcatori più visti', d: "Numero di gol dell'Inter nelle partite che hai visto (autogol degli avversari esclusi)."},
+  avversari: {s: 'Avversari · più incontrati', t: 'Avversari più incontrati', d: "Numero di partite in cui hai visto ogni giocatore avversario in campo contro l'Inter."},
+  'gol-contro': {s: 'Avversari · gol contro', t: "Chi ha segnato di più contro l'Inter", d: 'Numero di gol degli avversari nelle partite che hai visto (autogol esclusi).'}
+};
+const PAG_CLASS = 50;
+
 /* ---------- stato ---------- */
-const S = {q:'', stagione:'', comp:'', esito:'', settore:'', n:40, np:6};
+const S = {q:'', stagione:'', comp:'', esito:'', settore:'', n:40, np:6, nc:50, tipoClass:''};
 const tokens = () => norm(S.q).split(/\s+/).filter(Boolean);
 const filtriAttivi = () => !!(S.stagione || S.comp || S.esito || S.settore);
 
@@ -312,11 +349,14 @@ function perche(m, toks) {
   if (lunghi.some(t => norm(m.se).includes(t))) parti.push('settore ' + esc(m.se));
   return parti.length ? '<div class="perche">' + parti.slice(0, 3).join(' · ') + (parti.length > 3 ? ' …' : '') + '</div>' : '';
 }
-function classifica(titolo, voci, unita) {
+function classifica(titolo, voci, tipo) {
   if (!voci.length) return '';
-  return '<section class="card"><h2>' + esc(titolo) + '</h2><ol class="classifica">' + voci.map(v =>
-    '<li>' + (v.k ? '<a href="#/giocatore/' + encodeURIComponent(v.k) + '">' + esc(v.n) + '</a>' : '<span class="nome">' + esc(v.n) + '</span>') +
-    '<span class="v">' + v.v + '</span></li>').join('') + '</ol></section>';
+  let rank = 0, prev = null;
+  const top = voci.slice(0, 8).map((v, i) => { if (v.v !== prev) { rank = i + 1; prev = v.v; } return {v, rank}; });
+  return '<section class="card"><h2>' + esc(titolo) + '</h2><ol class="classifica lista-completa">' + top.map(({v, rank}) =>
+    '<li data-r="' + rank + '">' + (v.k ? '<a href="#/giocatore/' + encodeURIComponent(v.k) + '">' + esc(v.n) + '</a>' : '<span class="nome">' + esc(v.n) + '</span>') +
+    '<span class="v">' + v.v + '</span></li>').join('') + '</ol>' +
+    (voci.length > 8 ? '<a class="vedi" href="#/classifica/' + tipo + '">Vedi tutti (' + voci.length + ') →</a>' : '') + '</section>';
 }
 
 /* ---------- home / ricerca ---------- */
@@ -333,16 +373,12 @@ function home() {
   document.body.classList.toggle('compatto', !!(toks.length || filtriAttivi()));
   let h = '';
   if (!toks.length && !filtriAttivi()) {
-    const inter = GIOC.filter(g => g.I > 0).sort((a,b) => b.I - a.I || b.ti - a.ti).slice(0, 8).map(g => ({k:g.k, n:g.n, v:g.I}));
-    const marc = new Map();
-    for (const m of P) for (const e of m.ev) if (e.t === 'g' && e.q === 'I' && e.x !== 'aut.') {
-      const id = e.k || 'n:' + norm(e.n);
-      const nome = e.k && PL.get(e.k) ? PL.get(e.k).n : e.n;
-      if (!marc.has(id)) marc.set(id, {k:e.k, n:nome, v:0});
-      marc.get(id).v++;
+    h += '<div class="griglia2">' + classifica('Giocatori più visti', LISTE.giocatori, 'giocatori') +
+      classifica('Marcatori più visti', LISTE.marcatori, 'marcatori') + '</div>';
+    if (LISTE.avversari.length || LISTE['gol-contro'].length) {
+      h += '<div class="avv-link">Avversari: <a href="#/classifica/avversari">più incontrati</a> · ' +
+        '<a href="#/classifica/gol-contro">più gol contro l\'Inter</a></div>';
     }
-    const top = [...marc.values()].sort((a,b) => b.v - a.v).slice(0, 8);
-    h += '<div class="griglia2">' + classifica('Giocatori più visti', inter) + classifica('Marcatori più visti', top) + '</div>';
   } else {
     const gtrov = toks.length ? GIOC.filter(g => toks.every(t => g._n.includes(t))).sort((a,b) => b.pv - a.pv || b.gol - a.gol) : [];
     if (gtrov.length) {
@@ -438,12 +474,53 @@ function nonTrovato() {
   app.innerHTML = '<div class="nav"><a href="#/">← Home</a></div><div class="vuoto">Pagina non trovata.</div>';
 }
 
+/* ---------- classifica completa ---------- */
+function anni(p, sq) {
+  const ys = p.app.filter(a => a.sq === sq).map(a => a.m.d.slice(0, 4)).sort();
+  if (!ys.length) return '';
+  return ys[0] === ys[ys.length - 1] ? ys[0] : ys[0] + '–' + ys[ys.length - 1];
+}
+function squadraTop(p, sq) {
+  const c = {};
+  for (const a of p.app) if (a.sq === sq) c[a.m.av] = (c[a.m.av] || 0) + 1;
+  return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+}
+function sottotesto(tipo, v) {
+  const p = v.p;
+  if (!p) return '';
+  if (tipo === 'giocatori') return [p.tiI + ' da titolare', p.suI + ' subentrato', anni(p, 'I')].filter(Boolean).join(' · ');
+  if (tipo === 'marcatori') return [v.rig ? v.rig + ' su rigore' : '', p.I + (p.I === 1 ? ' partita vista' : ' partite viste')].filter(Boolean).join(' · ');
+  if (tipo === 'avversari') return [squadraTop(p, 'A'), p.tiA + ' da titolare', anni(p, 'A')].filter(Boolean).join(' · ');
+  return [squadraTop(p, 'A'), v.rig ? v.rig + ' su rigore' : ''].filter(Boolean).join(' · ');
+}
+function vistaClassifica(tipo) {
+  setDettaglio();
+  const def = CLASS_DEF[tipo];
+  if (!def) return nonTrovato();
+  S.tipoClass = tipo;
+  const voci = LISTE[tipo];
+  let rank = 0, prev = null;
+  const righe = voci.map((v, i) => { if (v.v !== prev) { rank = i + 1; prev = v.v; } return {v, rank}; });
+  let h = '<div class="nav"><button type="button" data-act="indietro">← Indietro</button></div>';
+  h += '<div class="tab-class">' + Object.keys(CLASS_DEF).map(k =>
+    '<a class="chip' + (k === tipo ? ' on' : '') + '" href="#/classifica/' + k + '">' + esc(CLASS_DEF[k].s) + '</a>').join('') + '</div>';
+  h += '<section class="card"><h2>' + esc(def.t) + '</h2><p class="muto" style="margin:0 0 6px">' + esc(def.d) + ' Totale: ' + voci.length + '.</p>';
+  if (!voci.length) h += '<div class="vuoto">Ancora niente da mostrare.</div>';
+  h += '<ol class="classifica lista-completa">' + righe.slice(0, S.nc).map(({v, rank}) =>
+    '<li data-r="' + rank + '"><div class="nm">' + (v.k ? '<a href="#/giocatore/' + encodeURIComponent(v.k) + '">' + esc(v.n) + '</a>' : '<span>' + esc(v.n) + '</span>') +
+    (sottotesto(tipo, v) ? '<small>' + esc(sottotesto(tipo, v)) + '</small>' : '') + '</div><span class="v">' + v.v + '</span></li>').join('') + '</ol>';
+  if (voci.length > S.nc) h += '<button class="altri" data-act="piu-classifica">Mostra altri (' + (voci.length - S.nc) + ')</button>';
+  h += '</section>';
+  app.innerHTML = h;
+}
+
 /* ---------- routing ---------- */
 function route() {
   const parti = location.hash.replace(/^#\/?/, '').split('/');
   const tipo = parti[0], arg = decodeURIComponent(parti.slice(1).join('/'));
   if (tipo === 'partita') partita(+arg);
   else if (tipo === 'giocatore') paginaGiocatore(arg);
+  else if (tipo === 'classifica') { S.nc = PAG_CLASS; vistaClassifica(arg); }
   else {
     if (tipo === 'cerca') { S.q = arg; $('q').value = arg; aggiornaX(); }
     home();
@@ -475,6 +552,7 @@ app.addEventListener('click', e => {
   const a = b.dataset.act;
   if (a === 'piu-partite') { S.n += 40; home(); }
   else if (a === 'piu-giocatori') { S.np += 20; home(); }
+  else if (a === 'piu-classifica') { S.nc += PAG_CLASS; vistaClassifica(S.tipoClass); }
   else if (a === 'indietro') { if (history.length > 1) history.back(); else location.hash = '#/'; }
 });
 window.addEventListener('hashchange', route);
