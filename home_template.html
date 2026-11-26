@@ -294,7 +294,7 @@ const filtriAttivi = () => !!(S.stagione || S.comp || S.esito || S.settore);
   opz('f-comp', 'Competizione', uniq(m=>m.c).sort());
   opz('f-settore', 'Settore', uniq(m=>m.se).sort());
   $('f-esito').innerHTML = '<option value="">Esito</option><option value="V">Vittorie</option><option value="N">Pareggi</option><option value="P">Sconfitte</option>';
-  const suggerimenti = ['derby','vittorie','sconfitte','champions','supercoppa','terzo anello','secondo anello'];
+  const suggerimenti = ['Derby','Vittorie','Sconfitte','Champions','Supercoppa','Terzo anello','Secondo anello'];
   const cc = uniq(m=>m.s).length > 0 ? suggerimenti : [];
   $('chips').innerHTML = cc.map(t=>'<button class="chip" type="button" data-q="'+esc(t)+'">'+esc(t)+'</button>').join('');
   $('piede').innerHTML = 'Aggiornato il ' + esc(D.agg || '');

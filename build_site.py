@@ -19,7 +19,7 @@ import subprocess
 import sys
 import unicodedata
 
-import pandas as pd
+import pandas as pd # type: ignore
 
 SITE = pathlib.Path("site")
 PRESENZE = pathlib.Path("presenze_stadio.csv")
